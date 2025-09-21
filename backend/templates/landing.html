@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Basic meta tags for proper character encoding and responsive design -->
+    <meta charset="UTF-8">
+    <!-- Viewport meta tag ensures proper scaling on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeYatri - Smart Tourist Safety Monitoring System</title>
+    
+    <!-- External CSS Libraries -->
+    <!-- Bootstrap CSS - Provides responsive grid system and pre-built components -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome - Provides icons used throughout the site -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS Styles -->
+    <style>
+        /* CSS Variables for Indian tricolor theme */
+        :root {
+            --saffron: #FF9933;         /* Saffron orange - Indian flag top */
+            --white: #FFFFFF;           /* White - Indian flag middle */
+            --green: #138808;           /* Green - Indian flag bottom */
+            --navy-blue: #000080;      /* Navy blue for text and accents */
+            --light-saffron: #FFB366;   /* Light saffron for gradients */
+            --light-green: #4CAF50;    /* Light green for success states */
+            --dark-navy: #001133;      /* Dark navy for headers */
+        }
+        
+        /* Base body styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Navigation bar styling */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);  /* Semi-transparent white background */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            backdrop-filter: blur(10px);            /* Blur effect for glass morphism */
+        }
+        
+        /* Brand logo styling in navbar */
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--navy-blue) !important;
+            font-size: 1.5rem;
+        }
+        
+        /* Logo fade-in animation */
+        .logo-container {
+            opacity: 0;
+            animation: fadeInLogo 2s ease-in-out forwards;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        @keyframes fadeInLogo {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(45deg, var(--saffron), var(--white), var(--green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .logo-icon::before {
+            content: '✈️';
+            font-size: 3rem;
+            color: var(--navy-blue);
+        }
+        
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--navy-blue);
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo-tagline {
+            font-size: 1.2rem;
+            color: var(--navy-blue);
+            font-weight: 500;
+        }
+        
+        /* Hero section with Indian tricolor gradient background */
+        .hero-section {
+            background: linear-gradient(135deg, var(--saffron), var(--white), var(--green));
+            color: var(--navy-blue);
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorative wave SVG background in hero section */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-repeat: no-repeat;
+            background-position: bottom;
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        /* Feature card styling */
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;  /* Smooth hover animation */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: white;
+            overflow: hidden;
+        }
+        
+        /* Hover effect for feature cards */
+        .feature-card:hover {
+            transform: translateY(-5px);  /* Slight lift effect */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);  /* Enhanced shadow on hover */
+        }
+        
+        /* Feature card content padding */
+        .feature-card .card-body {
+            padding: 2rem;
+        }
+        
+        /* Circular icon container in feature cards */
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Icon styling within feature cards */
+        .feature-icon i {
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        /* Pricing card styling */
+        .pricing-card {
+            border: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        /* Hover effect for pricing cards */
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        /* Featured pricing card styling */
+        .pricing-card.featured {
+            border: 2px solid var(--primary-color);
+            position: relative;
+        }
+        
+        /* "Most Popular" badge on featured pricing card */
+        .pricing-card.featured::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-bottom-left-radius: 15px;
+        }
+        
+        /* Primary button styling */
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Primary button hover effect */
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        /* Outline button styling */
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 25px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Outline button hover effect */
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Statistics section styling */
+        .stats-section {
+            background: #f8f9fa;
+            padding: 80px 0;
+            position: relative;
+        }
+        
+        /* Individual stat card styling */
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        /* Stat card hover effect */
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Statistic number styling */
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Statistic label styling */
+        .stat-label {
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+        
+        /* Demo section styling */
+        .demo-section {
+            padding: 80px 0;
+            background: white;
+        }
+        
+        /* Demo video container styling */
+        .demo-video {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        /* Features grid layout */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+        
+        /* Footer styling */
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 60px 0 30px;
+        }
+        
+        /* Footer link styling */
+        .footer-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        /* Footer link hover effect */
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        /* Social media links container */
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        /* Individual social media link styling */
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        /* Social media link hover effect */
+        .social-links a:hover {
+            background: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        /* Responsive design adjustments */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 0;  /* Reduced padding on mobile */
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;  /* Single column on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-plane me-2"></i>SafeYatri
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#demo">Live Demo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-primary btn-sm ms-2" href="/login">Authority Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section - Main landing area -->
+    <section class="hero-section">
+        <div class="container">
+            <!-- Logo with fade-in animation -->
+            <div class="logo-container">
+                <div class="logo-icon"></div>
+                <div class="logo-text">SafeYatri</div>
+                <div class="logo-tagline">सुरक्षित यात्रा, डिजिटल ब्रहान</div>
+            </div>
+            
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Smart Tourist Safety Monitoring System</h1>
+                    <p class="lead mb-4">Advanced AI-powered tourist safety monitoring with real-time tracking, digital IDs, and instant emergency response for authorities.</p>
+                    <a href="#demo" class="btn btn-primary btn-lg me-3">Live Demo</a>
+                    <a href="#dashboard" class="btn btn-outline-primary btn-lg">Authority Dashboard</a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="demo-video">
+                        <img src="{{ url_for('video_feed') }}" alt="SafeYatri Live Monitoring" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Individual statistic cards -->
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label">Tourist Detection Accuracy</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number">&lt;1s</div>
+                        <div class="stat-label">Emergency Response</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Safety Monitoring</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number">5000+</div>
+                        <div class="stat-label">Tourists Protected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Tourist Safety Features</h2>
+            <div class="features-grid">
+                <!-- Individual feature cards -->
+                <div class="feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <h5>Digital Tourist IDs</h5>
+                        <p>Blockchain-based digital identity system with KYC verification and trip itinerary tracking.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h5>Real-time Tracking</h5>
+                        <p>Live location monitoring with IoT bands and GPS tracking for tourist safety.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h5>Geofencing Alerts</h5>
+                        <p>Automatic alerts when tourists enter high-risk or restricted zones with instant notifications.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h5>Safety Score Analytics</h5>
+                        <p>AI-powered safety scoring based on travel patterns and area sensitivity analysis.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h5>CCTV Integration</h5>
+                        <p>Seamless integration with existing CCTV networks for comprehensive monitoring coverage.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h5>Emergency Response</h5>
+                        <p>Instant panic button with live location sharing to nearest police and emergency contacts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Authority Dashboard Section -->
+    <section id="dashboard" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Authority Dashboard</h2>
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                            <h5>Active Tourists</h5>
+                            <h2 class="text-primary" id="activeTourists">0</h2>
+                            <p class="text-muted">Currently monitored</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5>Active Alerts</h5>
+                            <h2 class="text-warning" id="activeAlerts">0</h2>
+                            <p class="text-muted">Requiring attention</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
+                            <h5>IoT Devices</h5>
+                            <h2 class="text-success" id="iotDevices">0</h2>
+                            <p class="text-muted">Live tracking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-video me-2"></i>Live CCTV Feed</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="demo-video">
+                                <img src="{{ url_for('video_feed') }}" alt="Live Monitoring" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-bell me-2"></i>Recent Alerts</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentAlerts" style="max-height: 300px; overflow-y: auto;">
+                                <!-- Alerts will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section with Live Feed -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <h2 class="text-center mb-5">See SafeYatri in Action</h2>
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <!-- Live video feed container -->
+                    <div class="demo-video">
+                        <img src="{{ url_for('video_feed') }}" alt="Live Demo" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <!-- Demo controls and features list -->
+                    <h3 class="mb-4">Live Tourist Detection Demo</h3>
+                    <p class="mb-4">Experience our AI-powered tourist safety monitoring system in real-time. The demo showcases:</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Real-time tourist detection</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Digital ID recognition</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Safety score monitoring</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>IoT device tracking</li>
+                    </ul>
+                    <div class="mt-4">
+                        <!-- Detection control buttons -->
+                        <button class="btn btn-primary me-3" onclick="startDetection()">Start Monitoring</button>
+                        <button class="btn btn-outline-primary" onclick="stopDetection()">Stop Monitoring</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Choose Your Plan</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card h-100">
+                        <div class="card-body">
+                            <h5 class="text-center">Basic</h5>
+                            <h1 class="text-center my-4">$99<small class="text-muted">/mo</small></h1>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Up to 4 cameras</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Email alerts</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>24/7 monitoring</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Basic analytics</li>
+                            </ul>
+                            <a href="#demo" class="btn btn-outline-primary d-block">Try Demo</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card featured h-100">
+                        <div class="card-body">
+                            <h5 class="text-center">Professional</h5>
+                            <h1 class="text-center my-4">$199<small class="text-muted">/mo</small></h1>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Up to 8 cameras</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Email & SMS alerts</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>24/7 monitoring</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Advanced analytics</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Cloud storage</li>
+                            </ul>
+                            <a href="#demo" class="btn btn-primary d-block">Try Demo</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card h-100">
+                        <div class="card-body">
+                            <h5 class="text-center">Enterprise</h5>
+                            <h1 class="text-center my-4">Custom</h1>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Unlimited cameras</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Custom integration</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>24/7 priority support</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Custom analytics</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Dedicated hosting</li>
+                            </ul>
+                            <a href="#contact" class="btn btn-outline-primary d-block">Contact Sales</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Our Mission</h2>
+                    <p class="lead">Creating safer environments through innovative AI technology.</p>
+                    <p>SafeWatch leverages cutting-edge artificial intelligence to provide real-time violence detection and prevention. Our system combines pose estimation, weapon detection, and smart zone monitoring to ensure maximum security for your premises.</p>
+                    <div class="mt-4">
+                        <a href="#demo" class="btn btn-primary me-3">Try Demo</a>
+                        <a href="#contact" class="btn btn-outline-primary">Contact Us</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="{{ url_for('static', filename='about-image.png') }}" alt="About SafeWatch" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upload Section -->
+    <section id="upload" class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Upload Video for Analysis</h2>
+                    <p class="lead">Test our AI detection system with your own videos</p>
+                    <p>Upload any video file and our advanced AI will analyze it for:</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Violent behavior detection</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Weapon identification</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Blood detection</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>Detailed analysis report</li>
+                    </ul>
+                    <div class="mt-4">
+                        <a href="/upload" class="btn btn-primary btn-lg">Upload Video Now</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow-lg">
+                        <div class="card-body p-4">
+                            <h4 class="mb-3">How It Works</h4>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="feature-icon me-3">
+                                    <i class="fas fa-upload"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">1. Upload Your Video</h5>
+                                    <p class="mb-0">Select any video file from your computer</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="feature-icon me-3">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">2. AI Analysis</h5>
+                                    <p class="mb-0">Our AI processes the video in real-time</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon me-3">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">3. Get Results</h5>
+                                    <p class="mb-0">Receive detailed analysis and detection report</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <!-- Company information -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="mb-3">SafeYatri</h5>
+                    <p>Smart Tourist Safety Monitoring & Incident Response System using AI, Geo-Fencing, and Blockchain-based Digital ID.</p>
+                    <!-- Social media links -->
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <!-- Quick links -->
+                <div class="col-md-2 mb-4">
+                    <h5 class="mb-3">Product</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#demo">Demo</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+                <!-- Support links -->
+                <div class="col-md-2 mb-4">
+                    <h5 class="mb-3">Support</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Status</a></li>
+                        <li><a href="#">Security</a></li>
+                    </ul>
+                </div>
+                <!-- Contact information -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="mb-3">Contact</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><i class="fas fa-envelope me-2"></i>alternatetrisha@gmail.com</li>
+                        <li><i class="fas fa-phone me-2"></i>+91 9209611285</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i>Mumbai, India</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Copyright notice -->
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2025 SafeYatri. All rights reserved. | Ministry of Development of North Eastern Region</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Dependencies -->
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO Client Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    
+    <!-- Custom JavaScript for WebSocket functionality -->
+    <script>
+        // Initialize Socket.IO connection
+        const socket = io();
+        
+        // Event handler for successful connection
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        
+        // Event handler for status updates
+        socket.on('status', (data) => {
+            console.log('Status:', data);
+        });
+        
+        // Event handler for alerts
+        socket.on('alert', (data) => {
+            console.log('Alert:', data);
+            // Display alert notification
+            showAlert(data);
+        });
+        
+        // Function to start detection
+        function startDetection() {
+            socket.emit('start_detection');
+        }
+        
+        // Function to stop detection
+        function stopDetection() {
+            socket.emit('stop_detection');
+        }
+        
+        // Function to display alert notifications
+        function showAlert(data) {
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            alertDiv.innerHTML = `
+                <strong>Alert!</strong> ${data.type} detected!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Dashboard data fetching
+        function updateDashboardStats() {
+            fetch('/api/dashboard/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('activeTourists').textContent = data.active_tourists;
+                    document.getElementById('activeAlerts').textContent = data.active_alerts;
+                    document.getElementById('iotDevices').textContent = data.iot_devices;
+                    
+                    // Update recent alerts
+                    const alertsContainer = document.getElementById('recentAlerts');
+                    alertsContainer.innerHTML = '';
+                    
+                    if (data.recent_alerts && data.recent_alerts.length > 0) {
+                        data.recent_alerts.forEach(alert => {
+                            const alertElement = document.createElement('div');
+                            alertElement.className = 'alert alert-warning mb-2';
+                            alertElement.innerHTML = `
+                                <strong>${alert.alert_type}</strong> - ${alert.tourist_name || 'Unknown Tourist'}
+                                <br><small>${new Date(alert.timestamp).toLocaleString()}</small>
+                            `;
+                            alertsContainer.appendChild(alertElement);
+                        });
+                    } else {
+                        alertsContainer.innerHTML = '<p class="text-muted">No recent alerts</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching dashboard stats:', error);
+                });
+        }
+        
+        // Update dashboard every 5 seconds
+        setInterval(updateDashboardStats, 5000);
+        
+        // Initial dashboard update
+        updateDashboardStats();
+    </script>
+</body>
+</html> 

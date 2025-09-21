@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: safeyatri-backend
+  namespace: safeyatri
+  labels:
+    app: safeyatri-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: safeyatri-backend
+  template:
+    metadata:
+      labels:
+        app: safeyatri-backend
+    spec:
+      containers:
+      - name: safeyatri-backend
+        image: safeyatri:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: safeyatri-secrets
+              key: SECRET_KEY
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: safeyatri-secrets
+              key: JWT_SECRET_KEY
+        - name: EMAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: safeyatri-secrets
+              key: EMAIL_PASSWORD
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: safeyatri-secrets
+              key: POSTGRES_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: safeyatri-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+        - name: saved-clips
+          mountPath: /app/static/saved_clips
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: safeyatri-uploads-pvc
+      - name: saved-clips
+        persistentVolumeClaim:
+          claimName: safeyatri-clips-pvc
+      imagePullSecrets:
+      - name: safeyatri-registry-secret

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeYatri - Authority Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --saffron: #FF9933;
+            --white: #FFFFFF;
+            --green: #138808;
+            --navy-blue: #000080;
+            --light-saffron: #FFB366;
+            --light-green: #4CAF50;
+            --dark-navy: #001133;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--saffron), var(--white), var(--green));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--navy-blue) !important;
+            font-size: 1.5rem;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--navy-blue), var(--dark-navy));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--saffron);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card.alert {
+            border-left-color: #dc3545;
+        }
+        
+        .stat-card.success {
+            border-left-color: var(--green);
+        }
+        
+        .stat-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .alert-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #dc3545;
+        }
+        
+        .alert-item.resolved {
+            border-left-color: var(--green);
+            opacity: 0.7;
+        }
+        
+        .tourist-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .tourist-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .safety-score {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        
+        .safety-score.high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .safety-score.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .safety-score.low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .live-feed {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .live-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .iot-device {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--green);
+        }
+        
+        .device-status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .device-status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .device-status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .device-status.low-battery {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-plane me-2"></i>SafeYatri Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="#" onclick="refreshDashboard()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Authority Dashboard</h1>
+                    <p class="lead mb-0">Real-time tourist safety monitoring and incident response system</p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <div class="d-flex justify-content-end">
+                        <div class="me-3">
+                            <div class="text-white-50">Last Updated</div>
+                            <div id="lastUpdated">--:--:--</div>
+                        </div>
+                        <div>
+                            <div class="text-white-50">System Status</div>
+                            <div class="text-success">
+                                <i class="fas fa-circle me-1"></i>Online
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-users fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number text-primary" id="activeTourists">0</div>
+                            <div class="text-muted">Active Tourists</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card alert">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number text-danger" id="activeAlerts">0</div>
+                            <div class="text-muted">Active Alerts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card success">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-map-marker-alt fa-2x text-success"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number text-success" id="iotDevices">0</div>
+                            <div class="text-muted">IoT Devices</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card warning">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-shield-alt fa-2x text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number text-warning" id="safetyScore">0.0</div>
+                            <div class="text-muted">Avg Safety Score</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Live CCTV Feed -->
+            <div class="col-lg-6 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-video me-2"></i>Live CCTV Feed
+                    </h5>
+                    <div class="live-feed">
+                        <div class="live-indicator">LIVE</div>
+                        <img src="{{ url_for('video_feed') }}" alt="Live Feed" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="col-lg-6 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-bell me-2"></i>Recent Alerts
+                    </h5>
+                    <div id="recentAlerts" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Alerts will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tourist Management -->
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-users me-2"></i>Active Tourists
+                    </h5>
+                    <div id="touristsList" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Tourists will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- IoT Devices -->
+            <div class="col-lg-4 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-wifi me-2"></i>IoT Devices Status
+                    </h5>
+                    <div id="iotDevicesList" style="max-height: 400px; overflow-y: auto;">
+                        <!-- IoT devices will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CCTV Zones Monitoring -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-video me-2"></i>CCTV Monitoring Zones
+                    </h5>
+                    <div id="cctvZones" class="row">
+                        <!-- CCTV zones will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Tourist Activity Over Time
+                    </h5>
+                    <canvas id="activityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-pie me-2"></i>Safety Score Distribution
+                    </h5>
+                    <canvas id="safetyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    
+    <script>
+        // Initialize Socket.IO connection
+        const socket = io();
+        
+        // Charts
+        let activityChart, safetyChart;
+        
+        // Initialize charts
+        function initCharts() {
+            // Activity Chart
+            const activityCtx = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [{
+                        label: 'Tourist Activity',
+                        data: [12, 19, 3, 5, 2, 3],
+                        borderColor: '#FF9933',
+                        backgroundColor: 'rgba(255, 153, 51, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Safety Chart
+            const safetyCtx = document.getElementById('safetyChart').getContext('2d');
+            safetyChart = new Chart(safetyCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Safety', 'Medium Safety', 'Low Safety'],
+                    datasets: [{
+                        data: [60, 30, 10],
+                        backgroundColor: ['#138808', '#FF9933', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // Update dashboard data
+        function updateDashboard() {
+            fetch('/api/dashboard/stats')
+                .then(response => response.json())
+                .then(data => {
+                    // Update statistics
+                    document.getElementById('activeTourists').textContent = data.active_tourists;
+                    document.getElementById('activeAlerts').textContent = data.active_alerts;
+                    document.getElementById('iotDevices').textContent = data.iot_devices;
+                    
+                    // Update last updated time
+                    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+                    
+                    // Update recent alerts
+                    updateRecentAlerts(data.recent_alerts || []);
+                })
+                .catch(error => {
+                    console.error('Error fetching dashboard data:', error);
+                });
+            
+            // Fetch tourists
+            fetch('/api/tourists')
+                .then(response => response.json())
+                .then(data => {
+                    updateTouristsList(data.tourists || []);
+                })
+                .catch(error => {
+                    console.error('Error fetching tourists:', error);
+                });
+            
+            // Fetch IoT devices
+            fetch('/api/iot/devices')
+                .then(response => response.json())
+                .then(data => {
+                    updateIoTDevicesList(data.devices || []);
+                })
+                .catch(error => {
+                    console.error('Error fetching IoT devices:', error);
+                });
+        }
+        
+        // Update recent alerts
+        function updateRecentAlerts(alerts) {
+            const container = document.getElementById('recentAlerts');
+            container.innerHTML = '';
+            
+            if (alerts.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No recent alerts</p>';
+                return;
+            }
+            
+            alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.className = `alert-item ${alert.resolved ? 'resolved' : ''}`;
+                alertElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>${alert.alert_type}</strong>
+                            <br><small class="text-muted">${alert.tourist_name || 'Unknown Tourist'}</small>
+                        </div>
+                        <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
+                    </div>
+                `;
+                container.appendChild(alertElement);
+            });
+        }
+        
+        // Update tourists list
+        function updateTouristsList(tourists) {
+            const container = document.getElementById('touristsList');
+            container.innerHTML = '';
+            
+            if (tourists.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No active tourists</p>';
+                return;
+            }
+            
+            tourists.forEach(tourist => {
+                const touristElement = document.createElement('div');
+                touristElement.className = 'tourist-card';
+                
+                const safetyClass = tourist.safety_score > 0.7 ? 'high' : 
+                                   tourist.safety_score > 0.4 ? 'medium' : 'low';
+                
+                touristElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${tourist.name}</strong>
+                            <br><small class="text-muted">ID: ${tourist.digital_id}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="safety-score ${safetyClass}">
+                                ${(tourist.safety_score * 100).toFixed(0)}%
+                            </span>
+                            <br><small class="text-muted">${tourist.nationality || 'Unknown'}</small>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(touristElement);
+            });
+        }
+        
+        // Update IoT devices list
+        function updateIoTDevicesList(devices) {
+            const container = document.getElementById('iotDevicesList');
+            container.innerHTML = '';
+            
+            if (devices.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No IoT devices</p>';
+                return;
+            }
+            
+            devices.forEach(device => {
+                const deviceElement = document.createElement('div');
+                deviceElement.className = 'iot-device';
+                
+                const statusClass = device.battery_level < 20 ? 'low-battery' : 
+                                  device.signal_strength < 30 ? 'offline' : 'online';
+                
+                deviceElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${device.device_id}</strong>
+                            <br><small class="text-muted">${device.tourist_name}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="device-status ${statusClass}">
+                                ${device.battery_level}% Battery
+                            </span>
+                            <br><small class="text-muted">${device.signal_strength}% Signal</small>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(deviceElement);
+            });
+        }
+        
+        // Update CCTV zones
+        function updateCCTVZones() {
+            fetch('/api/cctv/zones')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('cctvZones');
+                    container.innerHTML = '';
+                    
+                    if (data.zones && data.zones.length > 0) {
+                        data.zones.forEach(zone => {
+                            const zoneElement = document.createElement('div');
+                            zoneElement.className = 'col-lg-6 mb-3';
+                            
+                            const riskClass = zone.risk_level === 'high' ? 'danger' : 
+                                            zone.risk_level === 'medium' ? 'warning' : 'success';
+                            
+                            zoneElement.innerHTML = `
+                                <div class="card border-${riskClass}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">${zone.name}</h6>
+                                                <small class="text-muted">Zone ID: ${zone.zone_id}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge bg-${riskClass}">${zone.risk_level.toUpperCase()}</span>
+                                                <br><small class="text-muted">${zone.tourist_count} tourists</small>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                Lat: ${zone.location.latitude.toFixed(4)}, Lng: ${zone.location.longitude.toFixed(4)}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            container.appendChild(zoneElement);
+                        });
+                    } else {
+                        container.innerHTML = '<p class="text-muted text-center">No CCTV zones configured</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching CCTV zones:', error);
+                });
+        }
+        
+        // Refresh dashboard
+        function refreshDashboard() {
+            updateDashboard();
+        }
+        
+        // Socket event handlers
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        
+        socket.on('alert', (data) => {
+            console.log('New alert:', data);
+            // Refresh dashboard when new alert comes in
+            updateDashboard();
+        });
+        
+        socket.on('tourist_violence_alert', (data) => {
+            console.log('VIOLENCE ALERT:', data);
+            showViolenceAlert(data);
+            updateDashboard();
+        });
+        
+        // Show violence alert notification
+        function showViolenceAlert(alertData) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">🚨 VIOLENCE ALERT</h6>
+                        <strong>Tourist:</strong> ${alertData.tourist_name} (${alertData.tourist_id})<br>
+                        <strong>Region:</strong> ${alertData.region_id}<br>
+                        <strong>Types:</strong> ${alertData.violence_types.join(', ')}<br>
+                        <small class="text-muted">${new Date(alertData.timestamp).toLocaleString()}</small>
+                    </div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 10000);
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            updateDashboard();
+            updateCCTVZones();
+            
+            // Update dashboard every 10 seconds
+            setInterval(updateDashboard, 10000);
+            
+            // Update CCTV zones every 30 seconds
+            setInterval(updateCCTVZones, 30000);
+        });
+    </script>
+</body>
+</html>

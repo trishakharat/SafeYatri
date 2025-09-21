@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: safeyatri-config
+  namespace: safeyatri
+data:
+  FLASK_ENV: "production"
+  EMAIL_SENDER: "alerts@safeyatri.gov.in"
+  EMAIL_RECEIVER: "emergency@safeyatri.gov.in"
+  REDIS_URL: "redis://redis-service:6379"
+  DATABASE_URL: "postgresql://safeyatri:safeyatri2024@postgres-service:5432/safeyatri"

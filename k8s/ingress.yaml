@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: safeyatri-ingress
+  namespace: safeyatri
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - safeyatri.gov.in
+    - api.safeyatri.gov.in
+    secretName: safeyatri-tls
+  rules:
+  - host: safeyatri.gov.in
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: safeyatri-service
+            port:
+              number: 80
+  - host: api.safeyatri.gov.in
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: safeyatri-service
+            port:
+              number: 80
