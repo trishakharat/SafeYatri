@@ -20,7 +20,6 @@ import time  # Time-related functions for cooldowns and timestamps
 from collections import deque  # Efficient queue implementation for frame buffering
 import os  # Operating system interface for file and environment operations
 from dotenv import load_dotenv  # Environment variable management
-import json  # JSON data handling for API responses
 from datetime import datetime  # Date and time utilities for timestamps
 import logging  # Logging functionality for debugging and monitoring
 from werkzeug.utils import secure_filename  # For secure file upload handling
@@ -30,6 +29,8 @@ import uuid  # For unique identifiers
 import requests  # For IoT device communication
 import base64  # For image encoding
 from functools import wraps  # For decorators
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from api_docs import api_docs_bp
 
 # Authentication imports
 from auth.routes import auth_bp
@@ -42,35 +43,25 @@ from workflow.alert_workflow import AlertWorkflow
 from privacy.face_blur import FaceBlurProcessor, PrivacyManager
 from privacy.consent_manager import ConsentManager
 
-# Optional imports
-try:
-    import folium  # For map visualization
-    FOLIUM_AVAILABLE = True
-except ImportError:
-    FOLIUM_AVAILABLE = False
-    folium = None
-
-# Set up logging configuration
+# Initialize logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
-
-# Verify required environment variables are present
-required_vars = ['EMAIL_SENDER', 'EMAIL_PASSWORD', 'EMAIL_RECEIVER']
-if not all([os.getenv(var) for var in required_vars]):
-    logger.error("Missing required environment variables. Check .env file.")
-    raise EnvironmentError("Missing required environment variables")
 
 # Initialize Flask application with WebSocket support
 app = Flask(__name__)
-# Set secret key for session management and CSRF protection
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'safewatch-secret-key')
-# Initialize SocketIO with CORS support and eventlet async mode
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'safeyatri-secret-key')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
-# Initialize authentication
+# Prometheus metrics
+ALERTS_TOTAL = Counter('alerts_total', 'Total number of alerts emitted', ['type'])
+ALERT_PROCESSING_TIME_MS = Histogram('alert_processing_time_ms', 'Alert processing time in milliseconds')
+WEBSOCKET_LATENCY_MS = Histogram('websocket_latency_ms', 'WebSocket emit latency in milliseconds')
+DETECTION_CONFIDENCE_AVG = Histogram('detection_confidence', 'Detection confidence distribution', buckets=[i/10 for i in range(0, 11)])
+
+# Initialize authentication and core managers
 auth_manager = AuthManager()
 jwt_manager = JWTManager()
 auth_middleware = AuthMiddleware(jwt_manager, auth_manager)
@@ -83,6 +74,7 @@ consent_manager = ConsentManager()
 
 # Register authentication blueprint
 app.register_blueprint(auth_bp)
+app.register_blueprint(api_docs_bp)
 
 # Configure upload folder
 UPLOAD_FOLDER = 'uploads'
@@ -714,17 +706,6 @@ def upload_video():
         except Exception as e:
             logger.error(f"Error handling video upload: {str(e)}")
             return jsonify({'error': str(e)}), 500
-    
-    # GET request - return the upload form
-    return render_template('upload.html')
-
-@app.route('/api/upload_status')
-def upload_status():
-    """Get the status of video processing"""
-    return jsonify({
-        'is_processing': app_state.is_processing_upload
-    })
-
 # SafeYatri Dashboard API endpoints
 @app.route('/api/dashboard/stats')
 @auth_middleware.require_auth(['read'])
@@ -930,6 +911,59 @@ def get_violence_alerts():
         logger.error(f"Error getting violence alerts: {str(e)}")
         return jsonify({'alerts': []})
 
+@app.route('/api/inference/webhook', methods=['POST'])
+def inference_webhook():
+    """Receive detection events from inference service and create alerts."""
+    try:
+        payload = request.get_json(force=True)
+        alert_type = payload.get('type', 'violence_detected')
+        severity = payload.get('severity', 'high')
+        confidence = float(payload.get('confidence', 0.8))
+        location = payload.get('location', {'latitude': None, 'longitude': None})
+        camera_id = payload.get('camera_id', 'unknown_camera')
+        timestamp = payload.get('timestamp', datetime.now().isoformat())
+
+        # Observe confidence
+        try:
+            DETECTION_CONFIDENCE_AVG.observe(confidence)
+        except Exception:
+            pass
+
+        # Persist a simple alert record via tourist_model (if available) with unknown tourist
+        if tourist_model is not None:
+            try:
+                tourist_model.create_alert(
+                    tourist_id=0,
+                    alert_type=alert_type,
+                    location=location,
+                    severity=severity
+                )
+            except Exception as e:
+                logger.error(f"Error persisting alert: {e}")
+
+        # Emit to WebSocket inbox
+        detection_details = {
+            'timestamp': timestamp,
+            'confidence': confidence,
+            'camera_id': camera_id,
+            'location': location,
+            'severity': severity
+        }
+        t0 = time.time()
+        socketio.emit('alert', {
+            'type': alert_type,
+            'details': detection_details,
+            'timestamp': timestamp
+        })
+        t1 = time.time()
+        ALERTS_TOTAL.labels(alert_type).inc()
+        ALERT_PROCESSING_TIME_MS.observe(max(0.0, (t1 - t0) * 1000.0))
+
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        logger.error(f"Inference webhook error: {str(e)}")
+        return jsonify({'error': 'bad_request'}), 400
+
 @app.route('/api/cctv/zones')
 def get_cctv_zones():
     """Get CCTV monitoring zones"""
@@ -1075,6 +1109,22 @@ def get_evidence_with_privacy(tourist_id):
     except Exception as e:
         logger.error(f"Error getting evidence: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Docker"""
+    try:
+        # Check database connection, camera status, etc.
+        status = {
+            'status': 'healthy',
+            'timestamp': datetime.now().isoformat(),
+            'camera_status': app_state.detection_stats['camera_status'],
+            'uptime': time.time() - app_state.detection_stats['uptime']
+        }
+        return jsonify(status), 200
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
 # Main entry point
 if __name__ == '__main__':
